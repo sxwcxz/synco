@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SyncoMusic – Free offline music player for Android</title>
+<meta name="description" content="SyncoMusic is a free, ad-free offline music player for Android. Play the songs on your phone without internet, subscriptions or interruptions.">
+<meta property="og:title" content="SyncoMusic – Music, no signal needed">
+<meta property="og:description" content="Free, ad-free offline music player for Android.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#ece6d8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎵%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#ece6d8;--bg-a:rgba(236,230,216,.92);--fg:#16130f;--muted:#5f584c;--line:rgba(22,19,15,.2);--ghost:rgba(22,19,15,.09);--acc:#ff4a1c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12100d;--bg-a:rgba(18,16,13,.92);--fg:#f1ebdd;--muted:#a39b8b;--line:rgba(241,235,221,.2);--ghost:rgba(241,235,221,.08)}}
+:root[data-theme="dark"]{--bg:#12100d;--bg-a:rgba(18,16,13,.92);--fg:#f1ebdd;--muted:#a39b8b;--line:rgba(241,235,221,.2);--ghost:rgba(241,235,221,.08)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+.mono{font-family:"DM Mono",ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+#marq{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:0;white-space:nowrap;font-weight:800;font-size:26vw;line-height:1;letter-spacing:-.05em;color:transparent;-webkit-text-stroke:1.5px var(--ghost);pointer-events:none;will-change:transform}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+nav{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 16px max(20px,env(safe-area-inset-left,0px))}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.04em}
+.logo b{color:var(--acc)}
+.btn{display:inline-flex;align-items:center;gap:12px;padding:16px 24px;border-radius:4px;background:var(--fg);color:var(--bg);font-weight:800;font-size:16px;letter-spacing:-.01em;text-decoration:none;transition:background .2s,transform .2s}
+.btn:hover{background:var(--acc);color:#fff;transform:translateX(4px)}
+.btn.sm{padding:10px 16px;font-size:14px}
+main{position:relative;z-index:2}
+section{min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:clamp(64px,12vh,100px) max(clamp(28px,5vw,110px),env(safe-area-inset-right,0px)) clamp(24px,5vh,60px) max(clamp(28px,5vw,110px),env(safe-area-inset-left,0px))}
+.wrap{width:100%;display:flex}
+.r .wrap{justify-content:flex-end}
+.txt{max-width:min(480px,44vw)}
+.idx{display:flex;gap:14px;align-items:center;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-bottom:22px}
+.idx i{font-style:normal;color:var(--acc)}
+h1,h2{margin:0 0 22px;font-weight:800;line-height:.95;letter-spacing:-.045em}
+h1{font-size:clamp(34px,min(7.4vw,13.5vh),108px)}
+h2{font-size:clamp(28px,min(5vw,9.5vh),72px)}
+em{font-style:normal;color:var(--acc)}
+p{color:var(--muted);line-height:1.55;font-size:clamp(15px,min(1.5vw,2.8vh),19px);margin:0 0 clamp(16px,3vh,28px);font-weight:500}
+.stats{width:100%;max-width:min(620px,44vw);align-self:flex-end;display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}
+.stats div{padding:22px 18px 8px 0;border-right:1px solid var(--line);padding-left:18px;background:var(--bg-a)}
+.stats div:first-child{padding-left:0}.stats div:last-child{border-right:0}
+.stats div:nth-child(2n){border-right:0}.stats div:nth-child(n+3){border-top:1px solid var(--line)}.stats div:nth-child(odd){padding-left:0}
+.stats b{display:block;font-size:clamp(36px,min(6vw,11vh),96px);font-weight:800;letter-spacing:-.05em;line-height:1}
+.stats span{color:var(--muted)}
+#load{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:80vw;z-index:9;padding:8px 12px;border-radius:4px;background:var(--fg);color:var(--bg);transition:opacity .4s}
+footer{position:relative;z-index:2;padding:26px 28px calc(26px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);border-top:1px solid var(--line);background:var(--bg)}
+footer a{color:inherit}
+@media (max-aspect-ratio:21/20),(max-width:719px){
+ section{align-items:flex-end;padding:72px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px))}
+ .txt{max-width:min(100%,640px);background:var(--bg-a);padding:14px 14px 2px}
+ h1{font-size:clamp(32px,10vw,60px)}h2{font-size:clamp(28px,8.4vw,48px)}p{font-size:clamp(15px,4vw,18px)}
+ h1,h2{margin-bottom:12px}.idx{margin-bottom:12px;padding-top:10px}
+ .stats{max-width:min(100%,640px)}.stats b{font-size:clamp(34px,11vw,64px)}
+}
+</style>
+</head>
+<body>
+<div id="load" class="mono">Loading 3D scene</div>
+<div id="marq">OFFLINE — AD-FREE — YOURS — OFFLINE — AD-FREE — YOURS —</div>
+<canvas id="gl"></canvas>
+<nav><div class="logo">Synco<b>.</b>Music</div><a class="btn sm" href="https://play.google.com/store/apps/details?id=com.eaysoft.syncomusic">Get the app</a></nav>
+<main>
+ <section class="l"><div class="wrap"><div class="txt">
+  <div class="idx mono"><i>●</i> Offline music player for Android</div>
+  <h1>Music.<br>No signal <em>needed.</em></h1>
+  <p>SyncoMusic is a free, ad-free player for the songs already on your phone. Your files, your playlists, nothing in between.</p>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=com.eaysoft.syncomusic">Get it on Google Play <span>→</span></a>
+ </div></div></section>
+ <section class="l"><div class="wrap"><div class="txt">
+  <div class="idx mono"><i>01</i> Offline first</div>
+  <h2>Deep underground. <em>Still playing.</em></h2>
+  <p>Play every MP3 and audio file stored on your device with no Wi-Fi and no mobile data. Subway, flight, mountain trail.</p>
+ </div></div></section>
+ <section class="l"><div class="wrap"><div class="txt">
+  <div class="idx mono"><i>02</i> No ads, no fees</div>
+  <h2>Nothing <em>between</em> you and the song.</h2>
+  <p>No video ads, no audio commercials, no monthly subscription. Just clean sound and a fast interface with a satisfying tap on everything.</p>
+ </div></div></section>
+ <section class="l"><div class="wrap"><div class="txt">
+  <div class="idx mono"><i>03</i> Your library</div>
+  <h2>Playlists for <em>every</em> mood.</h2>
+  <p>Organize favorites, get Discover Weekly picks and share tracks to your stories with preview cards. Light on battery, too.</p>
+ </div></div></section>
+ <section><div class="wrap"><div class="stats mono">
+  <div><b id="st-rating">4.7</b><span>Play Store rating</span></div>
+  <div><b id="st-dl">1K+</b><span>Downloads</span></div>
+  <div><b>0</b><span>Ads</span></div>
+  <div><b>0</b><span>Data collected</span></div>
+ </div></div></section>
+ <section class="l"><div class="wrap"><div class="txt">
+  <div class="idx mono"><i>→</i> Android</div>
+  <h2>Press <em>play.</em></h2>
+  <p>Free on Google Play. Your whole library, one tap away.</p>
+  <a class="btn" href="https://play.google.com/store/apps/details?id=com.eaysoft.syncomusic">Get it on Google Play <span>→</span></a>
+ </div></div></section>
+</main>
+<footer class="mono"><span>© 2026 Eay Software · Figures from Google Play</span><a href="mailto:syncomusicdev@gmail.com">syncomusicdev@gmail.com</a></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+// Fallback values; the page then loads stats.json, which the GitHub Action keeps up to date.
+const STATS = {rating:'4.7', downloads:'1K+'};
+const LIVE_STATS_URL = 'stats.json';
+function showStats(s) {
+  document.getElementById('st-rating').textContent = s.rating;
+  document.getElementById('st-dl').textContent = s.downloads;
+}
+showStats(STATS);
+if (LIVE_STATS_URL) fetch(LIVE_STATS_URL, {cache:'no-cache'}).then(r => r.json()).then(s => { if (s && s.rating && s.downloads) showStats(s); }).catch(() => {});
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ignoreMobileResize:true});
+const stackMQ = matchMedia('(max-aspect-ratio:21/20),(max-width:719px)');
+const VH = 5.67; // visible world height at camera z=9, fov 35
+let L = {x:0, y:0, s:1};
+function measure() {
+  const a = innerWidth/innerHeight, W = VH*a, u = VH/innerHeight;
+  if (!stackMQ.matches) { // side layout: text left, phone hugging the right edge
+    const tr = Math.max(...[...document.querySelectorAll('.txt,.stats')].map(e => e.getBoundingClientRect().right));
+    const s = Math.max(.45, Math.min(.46*VH/2.1, (W - tr*u - .2)/1.85));
+    L = {s, x:W/2 - s*.85, y:0};
+  } else { // stacked layout: phone above the text block
+    const th = Math.max(...[...document.querySelectorAll('.txt,.stats')].map(e => e.offsetHeight));
+    const top = 64, h = Math.max(120, innerHeight - th - 24 - top);
+    const s = Math.max(.35, Math.min(h*u*.95/4.2, W*.42));
+    L = {s, x:0, y:VH/2 - (top + h/2)*u};
+  }
+}
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth > 860 ? 2 : 1.5));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, .1, 100);
+camera.position.set(0, 0, 9);
+
+// neutral studio softboxes for clean reflections
+const pm = new THREE.PMREMGenerator(renderer), env = new THREE.Scene();
+env.add(new THREE.Mesh(new THREE.SphereGeometry(20, 16, 16), new THREE.MeshBasicMaterial({color:0x2a2622, side:THREE.BackSide})));
+[[0xffffff,0,8,6,10,2],[0xfff1e0,-9,0,2,2,9],[0xff7a4d,9,-2,2,1.5,9],[0xffffff,0,-8,4,10,1]].forEach(([c,x,y,z,w,h])=>{
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,.5), new THREE.MeshBasicMaterial({color:new THREE.Color(c).multiplyScalar(4)}));
+  m.position.set(x,y,z); m.lookAt(0,0,0); env.add(m);
+});
+scene.environment = pm.fromScene(env, .04).texture;
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3,4,6); scene.add(key);
+
+const pivot = new THREE.Group(); scene.add(pivot);
+pivot.rotation.y = .35;
+let model;
+
+let tl;
+function build() {
+  if (tl) { tl.scrollTrigger.kill(); tl.kill(); }
+  measure();
+  pivot.position.set(L.x, L.y, 0); pivot.rotation.set(0, .35, 0); pivot.scale.setScalar(L.s);
+  tl = gsap.timeline({scrollTrigger:{trigger:'main', start:'top top', end:'bottom bottom', scrub:1.2}});
+  const step = (i, o) => {
+    tl.to(pivot.position, {x:L.x, y:L.y, ease:'power2.inOut', duration:1}, i);
+    tl.to(pivot.rotation, {x:o.rx||0, y:o.ry, z:o.rz||0, ease:'power2.inOut', duration:1}, i);
+    const s = L.s*(o.s||1); tl.to(pivot.scale, {x:s, y:s, z:s, ease:'power2.inOut', duration:1}, i);
+  };
+  step(0, {ry:-.5, rx:.08});
+  step(1, {ry:Math.PI-.45, rx:-.05, rz:.08});
+  step(2, {ry:Math.PI*2-.6, rx:.15, rz:-.1, s:1.06});
+  step(3, {ry:Math.PI*2, rx:-.2, s:.96});
+  step(4, {ry:Math.PI*2+.45, s:1.1});
+  tl.fromTo('#marq', {x:0}, {x:() => -document.getElementById('marq').offsetWidth * .6, ease:'none', duration:5}, 0);
+  tl.progress(tl.scrollTrigger.progress || 0);
+}
+gsap.utils.toArray('.txt, .stats div').forEach(el => gsap.from(el, {opacity:0, y:36, duration:.8, ease:'power3.out',
+  scrollTrigger:{trigger:el, start:'top 92%', toggleActions:'play none none reverse'}}));
+
+function ready() {
+  document.getElementById('load').style.opacity = 0;
+  setTimeout(() => document.getElementById('load').remove(), 500);
+}
+
+try {
+  new THREE.GLTFLoader().load('phone.glb', gltf => {
+    model = gltf.scene;
+    let box = new THREE.Box3().setFromObject(model), s = box.getSize(new THREE.Vector3());
+    if (s.z > s.y && s.z > s.x) model.rotation.x = -Math.PI/2;
+    else if (s.x > s.y) model.rotation.z = Math.PI/2;
+    model.updateMatrixWorld(true);
+    box = new THREE.Box3().setFromObject(model); s = box.getSize(new THREE.Vector3());
+    const c = box.getCenter(new THREE.Vector3()), k = 4.2 / Math.max(s.x, s.y, s.z);
+    const holder = new THREE.Group(); model.position.sub(c); holder.add(model); holder.scale.setScalar(0);
+    pivot.add(holder); model = holder; ready();
+    gsap.to(holder.scale, {x:k, y:k, z:k, duration:1, ease:'power3.out'});
+  }, undefined, err => { console.error(err); document.getElementById('load').textContent = 'Could not load 3D model: ' + (err && err.message ? err.message : err); });
+} catch (e) { console.error(e); ready(); }
+
+let mx = 0, my = 0;
+addEventListener('pointermove', e => { mx = e.clientX/innerWidth - .5; my = e.clientY/innerHeight - .5; });
+let lw = 0, lh = 0, rt;
+function resize(force) {
+  if (force !== true && innerWidth === lw && Math.abs(innerHeight - lh) < Math.max(140, innerHeight*.18)) return;
+  lw = innerWidth; lh = innerHeight;
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  build(); ScrollTrigger.refresh();
+}
+addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 150); });
+resize(true);
+if (document.fonts) document.fonts.ready.then(() => resize(true));
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  if (model) model.position.y = Math.sin(t*1.2) * .08;
+  camera.position.x += (mx*.8 - camera.position.x) * .05;
+  camera.position.y += (-my*.5 - camera.position.y) * .05;
+  camera.lookAt(0,0,0);
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
